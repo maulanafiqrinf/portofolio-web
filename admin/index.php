@@ -115,6 +115,8 @@ if ($_SESSION['id_level'] == "") {
                                     include 'pages/skills/index.php';
                                 } elseif ($_GET['halaman'] == "hapus-skills") {
                                     include 'pages/skills/hapus.php';
+                                } elseif ($_GET['halaman'] == "update-profil") {
+                                    include 'pages/landing/updatedata.php';
                                 }
                             } else {
                                 include 'pages/landing/index.php';
