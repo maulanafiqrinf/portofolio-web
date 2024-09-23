@@ -10,14 +10,14 @@
         <div class="section-wrapper pr-60 pl-60 mb-60">
             <div class="row">
 
-                <div class="col-12">
+                <!-- <div class="col-12">
                     <ul class="fillter-btn-wrap buttonGroup isotop-menu-wrapper mb-30">
                         <li class="fillter-btn is-checked" data-filter="*">All</li>
                         <li class="fillter-btn" data-filter=".mockup">Mockup</li>
                         <li class="fillter-btn" data-filter=".design">Graphic Design</li>
                         <li class="fillter-btn" data-filter=".logo">Logo</li>
                     </ul>
-                </div>
+                </div> -->
 
                 <div class="col-12">
                     <div id="fillter-item-active" class="fillter-item-wrap">
@@ -26,14 +26,15 @@
                         <?php
                         include 'koneksi/koneksi.php';
                         $certificates = mysqli_query($koneksi, "SELECT * FROM tb_certificate ORDER BY tanggal_selesai DESC");
+                        
                         if (mysqli_num_rows($certificates) > 0) {
                             while ($certificate = mysqli_fetch_assoc($certificates)) {
-                                $modal_id = 'portfolio-' . $certificate['id_certificate'];
+                                $modal_id = 'certificate-' . $certificate['id_certificate'];
                         ?>
-                                <div class="isotop-item ">
+                                <div class="isotop-item">
                                     <div class="fillter-item">
                                         <a class="img" href="#" data-bs-toggle="modal" data-bs-target="#<?php echo $modal_id; ?>">
-                                            <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="">
+                                            <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="Certificate Image">
                                         </a>
                                         <span class="item-subtitle"><?php echo $certificate['pihak']; ?></span>
                                         <h6 class="item-title">
@@ -59,7 +60,7 @@
                                                         <div class="col-md-6">
                                                             <h3 class="portfolio-modal-table-text">
                                                                 <i class="fa-regular fa-file-lines"></i>
-                                                                Posisi: <span><?php echo $certificate['pihak']; ?></span>
+                                                                Pihak: <span><?php echo $certificate['pihak']; ?></span>
                                                             </h3>
                                                         </div>
                                                         <div class="col-md-6">
@@ -75,7 +76,7 @@
                                                     <p><?php echo $certificate['detail']; ?></p>
                                                 </div>
                                                 <div class="h1-modal-img">
-                                                    <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="">
+                                                    <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="Certificate Image">
                                                 </div>
                                             </div>
                                         </div>

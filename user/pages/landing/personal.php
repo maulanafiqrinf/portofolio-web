@@ -5,43 +5,43 @@ include 'koneksi/koneksi.php';
 $data = mysqli_query($koneksi, "SELECT * FROM tb_about");
 
 // Memeriksa apakah ada data yang ditemukan
-if ($row = mysqli_fetch_assoc($data)) {
+if ($row = mysqli_fetch_assoc($data)) :
 ?>
     <div class="col-xxl-3 col-xl-3">
         <div class="bostami-parsonal-info-area">
             <div class="bostami-parsonal-info-wrap">
 
-                <!-- img -->
+                <!-- Gambar -->
                 <div class="bostami-parsonal-info-img">
-                    <img src="admin/storage/foto_about/<?php echo $row['foto_about']?>" alt="avatar">
+                    <img src="admin/storage/foto_about/<?= htmlspecialchars($row['foto_about']) ?>" alt="avatar">
                 </div>
 
-                <!-- name -->
+                <!-- Nama -->
                 <h4 class="bostami-parsonal-info-name">
-                    <a href="#"><?php echo $row['nama']; ?></a>
+                    <a href="#"><?= htmlspecialchars($row['nama']) ?></a>
                 </h4>
-                <span class="bostami-parsonal-info-bio mb-15"><?php echo $row['profession']; ?></span>
+                <span class="bostami-parsonal-info-bio mb-15"><?= htmlspecialchars($row['profession']) ?></span>
 
-                <!-- social link -->
+                <!-- Social Links -->
                 <ul class="bostami-parsonal-info-social-link mb-30">
                     <li>
-                        <a href="<?php echo $row['facebook']; ?>" class="facebook" target="_blank">
+                        <a href="<?= htmlspecialchars($row['facebook']) ?>" class="facebook" target="_blank">
                             <i class="fa-brands fa-facebook-f"></i>
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo $row['instagram']; ?>" class="instagram" target="_blank">
+                        <a href="<?= htmlspecialchars($row['instagram']) ?>" class="instagram" target="_blank">
                             <i class="fa-brands fa-instagram"></i>
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo $row['linkedn']; ?>" class="linkedin" target="blank">
+                        <a href="<?= htmlspecialchars($row['linkedn']) ?>" class="linkedin" target="_blank">
                             <i class="fa-brands fa-linkedin-in"></i>
                         </a>
                     </li>
                 </ul>
 
-                <!-- contact -->
+                <!-- Kontak -->
                 <div class="bostami-parsonal-info-contact mb-30">
                     <div class="bostami-parsonal-info-contact-item phone">
                         <div class="icon">
@@ -49,7 +49,7 @@ if ($row = mysqli_fetch_assoc($data)) {
                         </div>
                         <div class="text">
                             <span>Phone</span>
-                            <p><?php echo $row['phone']; ?></p>
+                            <p><?= htmlspecialchars($row['phone']) ?></p>
                         </div>
                     </div>
 
@@ -59,7 +59,7 @@ if ($row = mysqli_fetch_assoc($data)) {
                         </div>
                         <div class="text">
                             <span>Email</span>
-                            <p><?php echo $row['email']; ?></p>
+                            <p><?= htmlspecialchars($row['email']) ?></p>
                         </div>
                     </div>
 
@@ -69,7 +69,7 @@ if ($row = mysqli_fetch_assoc($data)) {
                         </div>
                         <div class="text">
                             <span>Location</span>
-                            <p><?php echo $row['location']; ?></p>
+                            <p><?= htmlspecialchars($row['location']) ?></p>
                         </div>
                     </div>
 
@@ -79,18 +79,18 @@ if ($row = mysqli_fetch_assoc($data)) {
                         </div>
                         <div class="text">
                             <span>Birthday</span>
-                            <p><?php echo $row['birthday']; ?></p>
+                            <p><?= htmlspecialchars($row['birthday']) ?></p>
                         </div>
                     </div>
                 </div>
 
-                <!-- cv button -->
+                <!-- Tombol CV -->
                 <div class="bostami-parsonal-info-btn">
-                    <a class="btn-1" href="<?php echo $row['cv']; ?>" target="_blank">
+                    <a class="btn-1" href="<?= htmlspecialchars($row['cv']) ?>" target="_blank">
                         <span class="icon">
                             <i class="fa-regular fa-download"></i>
                         </span>
-                        download cv
+                        Download CV
                     </a>
                 </div>
 
@@ -99,7 +99,7 @@ if ($row = mysqli_fetch_assoc($data)) {
     </div>
 
 <?php
-} else {
-    echo "Data tidak ditemukan.";
-}
+else :
+    echo "<p>Data tidak ditemukan.</p>";
+endif;
 ?>

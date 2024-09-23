@@ -1,8 +1,6 @@
-<?php
-include 'koneksi/koneksi.php';
-?>
-<!Doctype html>
-<html class="no-js" lang="zxx">
+<?php include 'koneksi/koneksi.php'; ?>
+<!DOCTYPE html>
+<html lang="zxx">
 
 <head>
     <meta charset="utf-8">
@@ -16,70 +14,61 @@ include 'koneksi/koneksi.php';
     <link rel="stylesheet" href="assets/frontend/css/fontawesome.min.css">
     <link rel="stylesheet" href="assets/frontend/css/all.min.css">
     <link rel="stylesheet" href="assets/frontend/css/odometer.min.css">
-    <!-- <link rel="stylesheet" href="assets/frontend/css/jquery.modal.min.css"> -->
     <link rel="stylesheet" href="assets/frontend/css/meanmenu.css">
     <link rel="stylesheet" href="assets/frontend/css/swipper.css">
     <link rel="stylesheet" href="assets/frontend/css/main.css">
 </head>
 
 <body class="dark-theme">
-
     <div class="page-wrapper home-1">
-        <!-- <div id="preloader">
-            <div class="loader_line"></div>
-        </div> -->
         <div class="bostami-header-area mb-30 z-index-5">
             <div class="container">
                 <div class="bostami-header-wrap">
                     <div class="row align-items-center">
-                        <div class="col-6">
-                        </div>
-                        <div class="col-6">
-                            <div class="bostami-header-menu-btn text-right">
-                                <!-- <div class="dark-btn dark-btn-stored dark-btn-icon">
-                                    <i class="fa-light fa-moon"></i>
-                                    <i class="fa-light fa-sun"></i>
-                                </div> -->
-                                <div class="menu-btn toggle_menu">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
+                        <div class="col-6"></div>
+                        <div class="col-6 text-right">
+                            <div class="menu-btn toggle_menu">
+                                <span></span>
+                                <span></span>
+                                <span></span>
                             </div>
                         </div>
-
                     </div>
                 </div>
                 <div class="mobile-menu-wrap">
-                    <div class="mobile-menu mobile_menu">
-                    </div>
+                    <div class="mobile-menu mobile_menu"></div>
                 </div>
             </div>
         </div>
 
         <div class="container z-index-3">
             <div class="row">
-                <?php include 'user/pages/landing/personal.php' ?>
+                <?php include 'user/pages/landing/personal.php'; ?>
 
                 <?php
-                if (isset($_GET['halaman'])) {
-                    if ($_GET['halaman'] == "about") {
+                $page = $_GET['halaman'] ?? 'about'; // Default to 'about' if not set
+                switch ($page) {
+                    case 'about':
                         include 'user/pages/landing/about.php';
-                    } elseif ($_GET['halaman'] == "resume") {
+                        break;
+                    case 'resume':
                         include 'user/pages/resume/resume.php';
-                    } elseif ($_GET['halaman'] == "portfolio") {
+                        break;
+                    case 'portfolio':
                         include 'user/pages/portfolio/index.php';
-                    } elseif ($_GET['halaman'] == "sertifikat") {
+                        break;
+                    case 'sertifikat':
                         include 'user/pages/sertifikat/index.php';
-                    } elseif ($_GET['halaman'] == "contact") {
+                        break;
+                    case 'contact':
                         include 'user/pages/contact/contact.php';
-                    }
-                } else {
-                    include 'user/pages/landing/about.php';
+                        break;
+                    default:
+                        include 'user/pages/landing/about.php';
                 }
                 ?>
 
-                <?php include 'user/components/sidebar.php' ?>
+                <?php include 'user/components/sidebar.php'; ?>
             </div>
         </div>
     </div>
