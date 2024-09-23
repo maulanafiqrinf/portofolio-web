@@ -60,7 +60,7 @@
                                     <span class="card-subtitle"><?php echo date("F Y", strtotime($experience['tanggal_mulai'])); ?> - <?php echo date("F Y", strtotime($experience['tanggal_selesai'])); ?></span>
                                     <h5 class="card-title"><?php echo $experience['posisi']; ?></h5>
                                     <h6 class="card-title"><?php echo $experience['title']; ?></h6>
-                                    <br/>
+                                    <br />
                                     <p class="card-text" style="text-align: justify;"><?php echo $experience['jobdesk']; ?></p>
                                 </div>
                             </div>
@@ -113,13 +113,19 @@
                     </div>
 
                     <div class="knowledeges-item-wrap">
-                        <span class="gk-item">Digital Design</span>
-                        <span class="gk-item">Marketing</span>
-                        <span class="gk-item">Communication</span>
-                        <span class="gk-item">Social Media</span>
-                        <span class="gk-item">Time Management</span>
-                        <span class="gk-item">Flexibility</span>
-                        <span class="gk-item">Print</span>
+                        <?php
+                        $project = mysqli_query($koneksi, "SELECT * FROM tb_project");
+                        $project_list = mysqli_fetch_all($project, MYSQLI_ASSOC);
+                        if (!empty($project_list)) {
+                            foreach ($project_list as $project) {
+                        ?>
+                                <span class="gk-item">Digital Design</span>
+                        <?php
+                            }
+                        } else {
+                            echo "Data tidak ditemukan.";
+                        }
+                        ?>
                     </div>
 
                 </div>
