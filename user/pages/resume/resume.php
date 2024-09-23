@@ -109,23 +109,23 @@
 
                 <div class="col-xl-12 col-lg-5">
                     <div class="bostami-section-title-wrap mb-20">
-                        <h4 class="section-title">Knowledges</h4>
+                        <h4 class="section-title">Kemampuan</h4>
                     </div>
 
                     <div class="knowledeges-item-wrap">
                         <?php
-                        $project = mysqli_query($koneksi, "SELECT * FROM tb_project");
-                        $project_list = mysqli_fetch_all($project, MYSQLI_ASSOC);
-                        if (!empty($project_list)) {
-                            foreach ($project_list as $project) {
+                        $skills = mysqli_query($koneksi, "SELECT * FROM tb_skills");
+                        $skills_list = mysqli_fetch_all($skills, MYSQLI_ASSOC);
+                        if (!empty($skills_list)) {
+                            foreach ($skills_list as $skills) {
                         ?>
-                                <span class="gk-item">Digital Design</span>
-                        <?php
+                                <span class="gk-item"><?php echo $project['nama']; ?><< /span>
+                                <?php
                             }
                         } else {
                             echo "Data tidak ditemukan.";
                         }
-                        ?>
+                                ?>
                     </div>
 
                 </div>
