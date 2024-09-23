@@ -1,6 +1,6 @@
 <div class="col-xxl-8 col-xl-9">
     <div class="bostami-page-content-wrap">
-        <!-- page title -->
+        <!-- Page Title -->
         <div class="section-wrapper pl-60 pr-60 pt-60">
             <div class="bostami-page-title-wrap mb-15">
                 <h2 class="page-title">Sertifikat</h2>
@@ -9,16 +9,6 @@
 
         <div class="section-wrapper pr-60 pl-60 mb-60">
             <div class="row">
-
-                <!-- <div class="col-12">
-                    <ul class="fillter-btn-wrap buttonGroup isotop-menu-wrapper mb-30">
-                        <li class="fillter-btn is-checked" data-filter="*">All</li>
-                        <li class="fillter-btn" data-filter=".mockup">Mockup</li>
-                        <li class="fillter-btn" data-filter=".design">Graphic Design</li>
-                        <li class="fillter-btn" data-filter=".logo">Logo</li>
-                    </ul>
-                </div> -->
-
                 <div class="col-12">
                     <div id="fillter-item-active" class="fillter-item-wrap">
                         <div class="grid-sizer"></div>
@@ -26,15 +16,23 @@
                         <?php
                         include 'koneksi/koneksi.php';
                         $certificates = mysqli_query($koneksi, "SELECT * FROM tb_certificate ORDER BY tanggal_selesai DESC");
-                        
+
                         if (mysqli_num_rows($certificates) > 0) {
                             while ($certificate = mysqli_fetch_assoc($certificates)) {
                                 $modal_id = 'certificate-' . $certificate['id_certificate'];
+                                // Split the image filenames into an array if stored as a comma-separated string
+                                $certificate_images = explode(',', $certificate['Gambar_hasilcertificate']);
                         ?>
                                 <div class="isotop-item">
                                     <div class="fillter-item">
                                         <a class="img" href="#" data-bs-toggle="modal" data-bs-target="#<?php echo $modal_id; ?>">
-                                            <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="Certificate Image">
+                                            <?php if (!empty($certificate_images)) : ?>
+                                                <img src="admin/storage/Gambar_hasilcertificate/<?php echo trim($certificate_images[0]); ?>" alt="Certificate Image">
+                                            <?php else : ?>
+                                                <p>No images found.</p>
+                                            <?php endif; ?>
+
+                                            <!-- <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="Certificate Image"> -->
                                         </a>
                                         <span class="item-subtitle"><?php echo $certificate['pihak']; ?></span>
                                         <h6 class="item-title">
@@ -75,9 +73,24 @@
                                                 <div class="h1-modal-paragraph">
                                                     <p><?php echo $certificate['detail']; ?></p>
                                                 </div>
+
                                                 <div class="h1-modal-img">
-                                                    <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="Certificate Image">
+                                                    <div class="swiper-container">
+                                                        <div class="swiper-wrapper">
+                                                            <?php foreach ($certificate_images as $image) : ?>
+                                                                <div class="swiper-slide">
+                                                                    <img src="admin/storage/Gambar_hasilcertificate/<?php echo trim($image); ?>" alt="Certificate Image">
+                                                                </div>
+                                                            <?php endforeach; ?>
+                                                        </div>
+                                                        <!-- Add Pagination -->
+                                                        <div class="swiper-pagination"></div>
+                                                        <!-- Add Navigation -->
+                                                        <div class="swiper-button-next"></div>
+                                                        <div class="swiper-button-prev"></div>
+                                                    </div>
                                                 </div>
+
                                             </div>
                                         </div>
                                     </div>
