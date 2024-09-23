@@ -16,7 +16,6 @@ include 'koneksi/koneksi.php';
     <link rel="stylesheet" href="assets/frontend/css/fontawesome.min.css">
     <link rel="stylesheet" href="assets/frontend/css/all.min.css">
     <link rel="stylesheet" href="assets/frontend/css/odometer.min.css">
-    <!-- <link rel="stylesheet" href="assets/frontend/css/jquery.modal.min.css"> -->
     <link rel="stylesheet" href="assets/frontend/css/meanmenu.css">
     <link rel="stylesheet" href="assets/frontend/css/swipper.css">
     <link rel="stylesheet" href="assets/frontend/css/main.css">
@@ -27,10 +26,10 @@ include 'koneksi/koneksi.php';
 
 <body class="dark-theme">
 
-    <div class="page-wrapper home-1">
-        <!-- <div id="preloader">
+    <div class="page-wrapper home-1" data-background="assets/frontend/img/bg/page-bg-dark-2.jpg">
+        <div id="preloader">
             <div class="loader_line"></div>
-        </div> -->
+        </div>
         <div class="bostami-header-area mb-30 z-index-5">
             <div class="container">
                 <div class="bostami-header-wrap">
@@ -39,10 +38,6 @@ include 'koneksi/koneksi.php';
                         </div>
                         <div class="col-6">
                             <div class="bostami-header-menu-btn text-right">
-                                <!-- <div class="dark-btn dark-btn-stored dark-btn-icon">
-                                    <i class="fa-light fa-moon"></i>
-                                    <i class="fa-light fa-sun"></i>
-                                </div> -->
                                 <div class="menu-btn toggle_menu">
                                     <span></span>
                                     <span></span>
@@ -65,7 +60,7 @@ include 'koneksi/koneksi.php';
                 <?php include 'user/pages/landing/personal.php' ?>
 
                 <?php
-                $page = $_GET['halaman'] ?? 'about'; // Default to 'about' if not set
+                $page = $_GET['halaman'] ?? 'about';
                 switch ($page) {
                     case 'about':
                         include 'user/pages/landing/about.php';
