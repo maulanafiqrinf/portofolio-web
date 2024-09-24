@@ -48,7 +48,6 @@ if (isset($_POST['save'])) {
                 'title' => 'Title',
                 'detail' => 'Detail',
                 'icon' => 'Icon',
-                'jobdesk' => 'Jobdesk',
             ];
 
             foreach ($fields as $name => $label) {
