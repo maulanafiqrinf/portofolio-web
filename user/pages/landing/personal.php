@@ -79,7 +79,7 @@ if ($row = mysqli_fetch_assoc($data)) :
                         </div>
                         <div class="text">
                             <span>Birthday</span>
-                            <p><?= htmlspecialchars($row['birthday']) ?></p>
+                            <p><?= date("d F Y", strtotime($row['birthday'])); ?></p>
                         </div>
                     </div>
                 </div>

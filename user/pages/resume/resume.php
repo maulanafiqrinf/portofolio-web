@@ -27,9 +27,10 @@
                     ?>
                             <div class="bostami-card-wrap">
                                 <div class="bostami-card-item bg-prink mb-20">
-                                    <span class="card-subtitle"><?= $education['tanggal']; ?></span>
-                                    <h6 class="card-title"><?= $education['jurusan']; ?> <span>- University,</span></h6>
-                                    <p class="card-text"><?= $education['nama']; ?></p>
+                                    <span class="card-subtitle"><?= date("F Y", strtotime($education['tanggal_mulai'])); ?> - <?= date("F Y", strtotime($education['tanggal_selesai'])); ?></span>
+                                    <h5 class="card-title"><?= $education['title']; ?> <span></span></h5>
+                                    <h6 class="card-text"><?= $education['posisi']; ?></h6>
+                                    <p class="card-text"><?= $education['detail']; ?></p>
                                 </div>
                             </div>
                     <?php

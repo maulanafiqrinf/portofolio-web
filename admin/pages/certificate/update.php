@@ -13,23 +13,30 @@ function getcertificateById($koneksi, $id_certificate)
 // Function to update certificate data
 function updatecertificate($koneksi, $data, $id_certificate)
 {
-    $stmt = $koneksi->prepare("UPDATE tb_certificate SET 
-              title=?, pihak=?, detail=?, jobdesk=?, 
-              Gambar_hasilcertificate=?, tanggal_mulai=?, tanggal_selesai=?
-              WHERE id_certificate=?");
+    $query = "UPDATE tb_certificate SET 
+              title=?, pihak=?, detail=?, jobdesk=?, Gambar_hasilcertificate=?, tanggal_mulai=?, tanggal_selesai=? 
+              WHERE id_certificate=?";
+              
+    // Prepare the statement
+    $stmt = $koneksi->prepare($query);
 
+    // If 'tanggal_selesai' is empty, set it to NULL
+    $tanggal_selesai = !empty($data['tanggal_selesai']) ? $data['tanggal_selesai'] : NULL;
+
+    // Bind parameters, where the last 'i' represents an integer, and the second-to-last '?' can be NULL
     $stmt->bind_param(
-        "ssssssi",
+        "sssssssi",
         $data['title'],
         $data['pihak'],
         $data['detail'],
         $data['jobdesk'],
         $data['Gambar_hasilcertificate'],
         $data['tanggal_mulai'],
-        $data['tanggal_selesai'],
-        $id_certificate // Make sure to add this last
+        $tanggal_selesai, // This can be NULL if not provided
+        $id_certificate // This must be the last parameter
     );
 
+    // Execute the query and return the result
     return $stmt->execute();
 }
 
@@ -80,7 +87,7 @@ if (isset($_POST['update'])) {
         'detail' => $_POST['detail'],
         'jobdesk' => $_POST['jobdesk'],
         'tanggal_mulai' => $_POST['tanggal_mulai'],
-        'tanggal_selesai' => $_POST['tanggal_selesai'],
+        'tanggal_selesai' => $_POST['tanggal_selesai'], // Can be NULL
         'Gambar_hasilcertificate' => !empty($_FILES['Gambar_hasilcertificate']['name'][0])
             ? handleFileUpload($_FILES['Gambar_hasilcertificate'])
             : $certificate['Gambar_hasilcertificate'],
@@ -95,6 +102,7 @@ if (isset($_POST['update'])) {
     }
 }
 ?>
+
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -153,7 +161,7 @@ if (isset($_POST['update'])) {
             <div class="row mb-3">
                 <label class="col-sm-2 col-form-label" for="tanggal_selesai">Tanggal Selesai</label>
                 <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="<?= htmlspecialchars($certificate['tanggal_selesai']) ?>" required>
+                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="<?= htmlspecialchars($certificate['tanggal_selesai']) ?>">
                 </div>
             </div>
             <!-- Save Button -->

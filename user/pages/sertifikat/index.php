@@ -9,12 +9,41 @@
 
         <div class="section-wrapper pr-60 pl-60 mb-60">
             <div class="row">
+
+                <?php
+                include 'koneksi/koneksi.php'; // Ensure the connection path is correct
+
+                // Query to get distinct values from 'pihak' column in 'tb_certificate' table
+                $query = "SELECT DISTINCT pihak FROM tb_certificate";
+                $result = $koneksi->query($query);
+
+                if ($result->num_rows > 0) {
+                    // Output the filter buttons dynamically
+                    echo '<div class="col-12">';
+                    echo '<ul class="fillter-btn-wrap buttonGroup isotop-menu-wrapper mb-30">';
+                    echo '<li class="fillter-btn is-checked" data-filter="*">All</li>'; // 'All' filter button
+
+                    // Loop through each distinct 'pihak' and create a filter button
+                    while ($row = $result->fetch_assoc()) {
+                        // Clean the pihak value to use it as a CSS class for filtering
+                        $pihak = htmlspecialchars($row['pihak']);
+                        $class = strtolower(str_replace(' ', '-', $pihak)); // Replace spaces with hyphens and convert to lowercase
+
+                        echo '<li class="fillter-btn" data-filter=".' . $class . '">' . $pihak . '</li>';
+                    }
+
+                    echo '</ul>';
+                    echo '</div>';
+                } else {
+                    echo "<div class='alert alert-warning'>No data found in tb_certificate.</div>";
+                }
+                ?>
+
                 <div class="col-12">
                     <div id="fillter-item-active" class="fillter-item-wrap">
                         <div class="grid-sizer"></div>
 
                         <?php
-                        include 'koneksi/koneksi.php';
                         $certificates = mysqli_query($koneksi, "SELECT * FROM tb_certificate ORDER BY tanggal_selesai DESC");
 
                         if (mysqli_num_rows($certificates) > 0) {
@@ -22,8 +51,11 @@
                                 $modal_id = 'certificate-' . $certificate['id_certificate'];
                                 // Split the image filenames into an array if stored as a comma-separated string
                                 $certificate_images = explode(',', $certificate['Gambar_hasilcertificate']);
+                                
+                                // Generate class for filtering based on 'pihak'
+                                $pihak_class = strtolower(str_replace(' ', '-', $certificate['pihak']));
                         ?>
-                                <div class="isotop-item">
+                                <div class="isotop-item <?= $pihak_class; ?>">
                                     <div class="fillter-item">
                                         <a class="img" href="#" data-bs-toggle="modal" data-bs-target="#<?php echo $modal_id; ?>">
                                             <?php if (!empty($certificate_images)) : ?>
@@ -31,8 +63,6 @@
                                             <?php else : ?>
                                                 <p>No images found.</p>
                                             <?php endif; ?>
-
-                                            <!-- <img src="admin/storage/Gambar_hasilcertificate/<?php echo $certificate['Gambar_hasilcertificate']; ?>" alt="Certificate Image"> -->
                                         </a>
                                         <span class="item-subtitle"><?php echo $certificate['pihak']; ?></span>
                                         <h6 class="item-title">
@@ -74,10 +104,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-
-                                                <!-- <div class="h1-modal-paragraph">
-                                                    <p><?php echo $certificate['detail']; ?></p>
-                                                </div> -->
 
                                                 <div class="h1-modal-img">
                                                     <div class="swiper-container">
