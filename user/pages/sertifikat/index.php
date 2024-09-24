@@ -64,15 +64,20 @@
                                                         <div class="col-md-6">
                                                             <h3 class="portfolio-modal-table-text">
                                                                 <i class="fa-regular fa-calendar"></i>
-                                                                Tanggal: <span><?php echo date("F Y", strtotime($certificate['tanggal_mulai'])); ?> - <?php echo date("F Y", strtotime($certificate['tanggal_selesai'])); ?></span>
+                                                                Tanggal: <span><?php echo date("F Y", strtotime($certificate['tanggal_mulai'])); ?> - <?php
+                                                                                                                                                        echo empty($certificate['tanggal_selesai'])
+                                                                                                                                                            ? "Sampai Sekarang"
+                                                                                                                                                            : date("F Y", strtotime($certificate['tanggal_selesai']));
+                                                                                                                                                        ?>
+                                                                </span>
                                                             </h3>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="h1-modal-paragraph">
+                                                <!-- <div class="h1-modal-paragraph">
                                                     <p><?php echo $certificate['detail']; ?></p>
-                                                </div>
+                                                </div> -->
 
                                                 <div class="h1-modal-img">
                                                     <div class="swiper-container">

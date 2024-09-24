@@ -8,14 +8,17 @@ function handleFormSubmission($koneksi)
             'detail' => mysqli_real_escape_string($koneksi, $_POST['detail']),
             'jobdesk' => mysqli_real_escape_string($koneksi, $_POST['jobdesk']),
             'tanggal_mulai' => mysqli_real_escape_string($koneksi, $_POST['tanggal_mulai']),
-            'tanggal_selesai' => mysqli_real_escape_string($koneksi, $_POST['tanggal_selesai']),
+            'tanggal_selesai' => empty($_POST['tanggal_selesai']) ? null : mysqli_real_escape_string($koneksi, $_POST['tanggal_selesai']),
         ];
+
         $uploaded_files = handleFileUpload('Gambar_hasilcertificate', "storage/Gambar_hasilcertificate/");
         $uploaded_files_string = implode(",", $uploaded_files);
+        
         $query = "INSERT INTO tb_certificate (title, pihak, detail, jobdesk, Gambar_hasilcertificate, tanggal_mulai, tanggal_selesai) 
                   VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         if ($stmt = $koneksi->prepare($query)) {
+            // Bind parameters, handle `NULL` for tanggal_selesai
             $stmt->bind_param(
                 "sssssss",
                 $data['title'],
@@ -39,6 +42,7 @@ function handleFormSubmission($koneksi)
         }
     }
 }
+
 
 function handleFileUpload($inputName, $targetDir)
 {
@@ -119,7 +123,7 @@ handleFormSubmission($koneksi);
                             <div class='row mb-3'>
                                 <label class='col-sm-2 col-form-label' for='$name'>$label</label>
                                 <div class='col-sm-6'>
-                                    <input type='date' class='form-control' id='$name' name='$name' required>
+                                    <input type='date' class='form-control' id='$name' name='$name'>
                                 </div>
                             </div>";
             }

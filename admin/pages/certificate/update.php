@@ -1,35 +1,33 @@
 <?php
 include '../koneksi/koneksi.php'; // Ensure the connection path is correct
 
-// Function to get project by ID
-function getProjectById($koneksi, $id_project)
+// Function to get certificate by ID
+function getcertificateById($koneksi, $id_certificate)
 {
-    $stmt = $koneksi->prepare("SELECT * FROM tb_project WHERE id_project = ?");
-    $stmt->bind_param("i", $id_project);
+    $stmt = $koneksi->prepare("SELECT * FROM tb_certificate WHERE id_certificate = ?");
+    $stmt->bind_param("i", $id_certificate);
     $stmt->execute();
     return $stmt->get_result()->fetch_assoc();
 }
 
-// Function to update project data
-function updateProject($koneksi, $data, $id_project)
+// Function to update certificate data
+function updatecertificate($koneksi, $data, $id_certificate)
 {
-    $stmt = $koneksi->prepare("UPDATE tb_project SET 
-              title=?, posisi=?, detail=?, technology=?, jobdesk=?, 
-              Gambar_hasilproject=?, tanggal_mulai=?, tanggal_selesai=?, class=? 
-              WHERE id_project=?");
+    $stmt = $koneksi->prepare("UPDATE tb_certificate SET 
+              title=?, pihak=?, detail=?, jobdesk=?, 
+              Gambar_hasilcertificate=?, tanggal_mulai=?, tanggal_selesai=?
+              WHERE id_certificate=?");
 
     $stmt->bind_param(
-        "ssssssssii",
+        "ssssssi",
         $data['title'],
-        $data['posisi'],
+        $data['pihak'],
         $data['detail'],
-        $data['technology'],
         $data['jobdesk'],
-        $data['Gambar_hasilproject'],
+        $data['Gambar_hasilcertificate'],
         $data['tanggal_mulai'],
         $data['tanggal_selesai'],
-        $data['class'],
-        $id_project // Make sure to add this last
+        $id_certificate // Make sure to add this last
     );
 
     return $stmt->execute();
@@ -39,7 +37,7 @@ function updateProject($koneksi, $data, $id_project)
 function handleFileUpload($files)
 {
     $uploaded_files = [];
-    $target_dir = "storage/Gambar_hasilproject/";
+    $target_dir = "storage/Gambar_hasilcertificate/";
 
     if (!is_dir($target_dir)) {
         mkdir($target_dir, 0755, true);
@@ -61,10 +59,10 @@ function handleFileUpload($files)
 
 // Check if ID is provided via the URL parameter
 if (isset($_GET['id'])) {
-    $id_project = intval($_GET['id']); // Ensure ID is an integer
-    $project = getProjectById($koneksi, $id_project);
+    $id_certificate = intval($_GET['id']); // Ensure ID is an integer
+    $certificate = getcertificateById($koneksi, $id_certificate);
 
-    if (!$project) {
+    if (!$certificate) {
         echo "<div class='alert alert-danger'>Data tidak ditemukan</div>";
         exit();
     }
@@ -78,22 +76,20 @@ if (isset($_POST['update'])) {
     // Prepare data from the form
     $data = [
         'title' => $_POST['title'],
-        'posisi' => $_POST['posisi'],
+        'pihak' => $_POST['pihak'],
         'detail' => $_POST['detail'],
-        'technology' => $_POST['technology'],
         'jobdesk' => $_POST['jobdesk'],
         'tanggal_mulai' => $_POST['tanggal_mulai'],
         'tanggal_selesai' => $_POST['tanggal_selesai'],
-        'class' => $_POST['class'],
-        'Gambar_hasilproject' => !empty($_FILES['Gambar_hasilproject']['name'][0])
-            ? handleFileUpload($_FILES['Gambar_hasilproject'])
-            : $project['Gambar_hasilproject'],
+        'Gambar_hasilcertificate' => !empty($_FILES['Gambar_hasilcertificate']['name'][0])
+            ? handleFileUpload($_FILES['Gambar_hasilcertificate'])
+            : $certificate['Gambar_hasilcertificate'],
     ];
 
-    // Update project data
-    if (updateProject($koneksi, $data, $id_project)) {
+    // Update certificate data
+    if (updatecertificate($koneksi, $data, $id_certificate)) {
         echo "<div class='alert alert-info'>Data Berhasil Diperbarui</div>";
-        echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=project'>";
+        echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=certificate'>";
     } else {
         echo "<div class='alert alert-danger'>Terjadi kesalahan: " . $koneksi->error . "</div>";
     }
@@ -102,7 +98,7 @@ if (isset($_POST['update'])) {
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Edit Project</h5>
+        <h5 class="card-title mb-0">Edit certificate</h5>
     </div>
     <div class="card-body">
         <form method="post" enctype="multipart/form-data">
@@ -110,45 +106,39 @@ if (isset($_POST['update'])) {
             <div class="row mb-3">
                 <label class="col-sm-2 col-form-label" for="title">Title</label>
                 <div class="col-sm-10">
-                    <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($project['title']) ?>" required>
+                    <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($certificate['title']) ?>" required>
                 </div>
             </div>
-            <!-- Posisi -->
+            <!-- pihak -->
             <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="posisi">Posisi</label>
+                <label class="col-sm-2 col-form-label" for="pihak">pihak</label>
                 <div class="col-sm-10">
-                    <input type="text" class="form-control" id="posisi" name="posisi" value="<?= htmlspecialchars($project['posisi']) ?>" required>
+                    <input type="text" class="form-control" id="pihak" name="pihak" value="<?= htmlspecialchars($certificate['pihak']) ?>" required>
                 </div>
             </div>
             <!-- Detail -->
             <div class="row mb-3">
                 <label class="col-sm-2 col-form-label" for="detail">Detail</label>
                 <div class="col-sm-10">
-                    <textarea id="detail" class="form-control" name="detail" required><?= htmlspecialchars($project['detail']) ?></textarea>
+                    <textarea id="detail" class="form-control" name="detail" required><?= htmlspecialchars($certificate['detail']) ?></textarea>
                 </div>
             </div>
             <!-- Technology -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="technology">Technology</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="technology" name="technology" value="<?= htmlspecialchars($project['technology']) ?>" required>
-                </div>
-            </div>
             <!-- Jobdesk -->
             <div class="row mb-3">
                 <label class="col-sm-2 col-form-label" for="jobdesk">Jobdesk</label>
                 <div class="col-sm-10">
-                    <textarea id="jobdesk" class="form-control" name="jobdesk" required><?= htmlspecialchars($project['jobdesk']) ?></textarea>
+                    <textarea id="jobdesk" class="form-control" name="jobdesk" required><?= htmlspecialchars($certificate['jobdesk']) ?></textarea>
                 </div>
             </div>
-            <!-- Gambar Hasil Project -->
+            <!-- Gambar Hasil certificate -->
             <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="Gambar_hasilproject">Foto</label>
+                <label class="col-sm-2 col-form-label" for="Gambar_hasilcertificate">Foto</label>
                 <div class="col-sm-10">
-                    <input type="file" class="form-control" id="Gambar_hasilproject" name="Gambar_hasilproject[]" multiple>
+                    <input type="file" class="form-control" id="Gambar_hasilcertificate" name="Gambar_hasilcertificate[]" multiple>
                     <!-- Display existing images -->
-                    <?php foreach (explode(',', $project['Gambar_hasilproject']) as $img): ?>
-                        <img src="storage/Gambar_hasilproject/<?= htmlspecialchars($img) ?>" alt="Gambar Project" width="100">
+                    <?php foreach (explode(',', $certificate['Gambar_hasilcertificate']) as $img): ?>
+                        <img src="storage/Gambar_hasilcertificate/<?= htmlspecialchars($img) ?>" alt="Gambar certificate" width="100">
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -156,24 +146,14 @@ if (isset($_POST['update'])) {
             <div class="row mb-3">
                 <label class="col-sm-2 col-form-label" for="tanggal_mulai">Tanggal Mulai</label>
                 <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" value="<?= htmlspecialchars($project['tanggal_mulai']) ?>" required>
+                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" value="<?= htmlspecialchars($certificate['tanggal_mulai']) ?>" required>
                 </div>
             </div>
             <!-- Tanggal Selesai -->
             <div class="row mb-3">
                 <label class="col-sm-2 col-form-label" for="tanggal_selesai">Tanggal Selesai</label>
                 <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="<?= htmlspecialchars($project['tanggal_selesai']) ?>" required>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="class">Class</label>
-                <div class="col-sm-10">
-                    <select class="form-control" id="class" name="class" required>
-                        <option value="<?= htmlspecialchars($project["class"]) ?>"><?= htmlspecialchars($project["class"]) ?></option>
-                        <option value="bg-prink">Pink</option>
-                        <option value="bg-catkrill">Grey</option>
-                    </select>
+                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="<?= htmlspecialchars($certificate['tanggal_selesai']) ?>" required>
                 </div>
             </div>
             <!-- Save Button -->
