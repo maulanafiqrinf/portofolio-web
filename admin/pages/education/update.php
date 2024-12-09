@@ -2,7 +2,7 @@
 include '../koneksi/koneksi.php'; // Ensure the connection path is correct
 
 // Function to get education by ID
-function geteducationById($koneksi, $id_education)
+function getEducationById($koneksi, $id_education)
 {
     $stmt = $koneksi->prepare("SELECT * FROM tb_education WHERE id_education = ?");
     $stmt->bind_param("i", $id_education);
@@ -11,7 +11,7 @@ function geteducationById($koneksi, $id_education)
 }
 
 // Function to update education data
-function updateeducation($koneksi, $data, $id_education)
+function updateEducation($koneksi, $data, $id_education)
 {
     $stmt = $koneksi->prepare("UPDATE tb_education SET 
               title=?, posisi=?, detail=?, tanggal_mulai=?, tanggal_selesai=?
@@ -24,96 +24,114 @@ function updateeducation($koneksi, $data, $id_education)
         $data['detail'],
         $data['tanggal_mulai'],
         $data['tanggal_selesai'],
-        // $data['class'],
         $id_education // Make sure to add this last
     );
 
     return $stmt->execute();
 }
 
-
 // Check if ID is provided via the URL parameter
 if (isset($_GET['id'])) {
     $id_education = intval($_GET['id']); // Ensure ID is an integer
-    $education = geteducationById($koneksi, $id_education);
+    $education = getEducationById($koneksi, $id_education);
 
     if (!$education) {
-        echo "<div class='alert alert-danger'>Data tidak ditemukan</div>";
+        echo "<script>Swal.fire('Error', 'Data tidak ditemukan', 'error');</script>";
         exit();
     }
 } else {
-    echo "<div class='alert alert-danger'>ID tidak valid</div>";
+    echo "<script>Swal.fire('Error', 'ID tidak valid', 'error');</script>";
     exit();
 }
 
 // If form is submitted
 if (isset($_POST['update'])) {
-    // Prepare data from the form
+    // Sanitize input data
     $data = [
-        'title' => $_POST['title'],
-        'posisi' => $_POST['posisi'],
-        'detail' => $_POST['detail'],
-        'tanggal_mulai' => $_POST['tanggal_mulai'],
-        'tanggal_selesai' => $_POST['tanggal_selesai'],
+        'title' => htmlspecialchars(trim($_POST['title'])),
+        'posisi' => htmlspecialchars(trim($_POST['posisi'])),
+        'detail' => htmlspecialchars(trim($_POST['detail'])),
+        'tanggal_mulai' => htmlspecialchars(trim($_POST['tanggal_mulai'])),
+        'tanggal_selesai' => htmlspecialchars(trim($_POST['tanggal_selesai'])),
     ];
 
-    // Update education data
-    if (updateeducation($koneksi, $data, $id_education)) {
-        echo "<div class='alert alert-info'>Data Berhasil Diperbarui</div>";
-        echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=education'>";
+    // Validate that required data is filled
+    if (!empty($data['title']) && !empty($data['posisi']) && !empty($data['detail']) && !empty($data['tanggal_mulai'])) {
+        // Validate that the end date is after the start date
+        if ($data['tanggal_selesai'] < $data['tanggal_mulai']) {
+            echo "<script>Swal.fire('Warning', 'Tanggal selesai harus setelah tanggal mulai.', 'warning');</script>";
+        } else {
+            // Update education data
+            if (updateEducation($koneksi, $data, $id_education)) {
+                echo "<script>
+                        Swal.fire({
+                            title: 'Success',
+                            text: 'Data Berhasil Diperbarui',
+                            icon: 'success'
+                        }).then(() => {
+                            location.href='admin/admin.php?halaman=education';
+                        });
+                      </script>";
+            } else {
+                echo "<script>Swal.fire('Error', 'Terjadi kesalahan: " . addslashes($koneksi->error) . "', 'error');</script>";
+            }
+        }
     } else {
-        echo "<div class='alert alert-danger'>Terjadi kesalahan: " . $koneksi->error . "</div>";
+        echo "<script>Swal.fire('Warning', 'Harap isi semua data wajib', 'warning');</script>";
     }
 }
 ?>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Edit education</h5>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Update Data Pendidikan</h4>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
-            <!-- Title -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="title">Title</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($education['title']) ?>" required>
-                </div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="title">Nama Universitas</label>
+                                <input id="title" name="title" type="text" class="form-control" placeholder="Nama" value="<?= htmlspecialchars($education['title']) ?>"  required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="posisi">Program Studi / Jurusan</label>
+                                <input id="posisi" name="posisi" type="text" class="form-control" placeholder="Program Studi/Jurusan" value="<?= htmlspecialchars($education['posisi']) ?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="detail">Keterangan</label>
+                                <textarea class="form-control" id="detail" rows="5" placeholder="detail" name="detail" required><?= nl2br(htmlspecialchars($education['detail'])) ?></textarea>
+                                <p style="color: red;">untuk membuat new line gunakan enter</p>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="tanggal_mulai">Tanggal Mulai</label>
+                                <input type="date" id="tanggal_mulai" class="form-control" placeholder="Tanggal Mulai" name="tanggal_mulai" value="<?= htmlspecialchars($education['tanggal_mulai']) ?>" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_selesai">Tanggal Selesai</label>
+                                <input type="date" id="tanggal_selesai" class="form-control" placeholder="Tanggal Selesai" name="tanggal_selesai" value="<?= htmlspecialchars($education['tanggal_selesai']) ?>" required />
+                            </div>
+                           
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary waves-effect waves-light" name="update">Update</button>
+                    </div>
+                </form>
+
             </div>
-            <!-- Posisi -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="posisi">Posisi</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="posisi" name="posisi" value="<?= htmlspecialchars($education['posisi']) ?>" required>
-                </div>
-            </div>
-            <!-- Detail -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="detail">Detail</label>
-                <div class="col-sm-10">
-                    <textarea id="detail" class="form-control" name="detail" required><?= htmlspecialchars($education['detail']) ?></textarea>
-                </div>
-            </div>
-            <!-- Tanggal Mulai -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="tanggal_mulai">Tanggal Mulai</label>
-                <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" value="<?= htmlspecialchars($education['tanggal_mulai']) ?>" required>
-                </div>
-            </div>
-            <!-- Tanggal Selesai -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="tanggal_selesai">Tanggal Selesai</label>
-                <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="<?= htmlspecialchars($education['tanggal_selesai']) ?>" required>
-                </div>
-            </div>
-            <!-- Save Button -->
-            <div class="row justify-content-end">
-                <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary" name="update">Update</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </div>

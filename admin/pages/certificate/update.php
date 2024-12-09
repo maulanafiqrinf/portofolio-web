@@ -1,5 +1,5 @@
 <?php
-include '../koneksi/koneksi.php'; // Ensure the connection path is correct
+include '../koneksi/koneksi.php'; // Pastikan koneksi sudah benar
 
 // Function to get certificate by ID
 function getcertificateById($koneksi, $id_certificate)
@@ -14,9 +14,9 @@ function getcertificateById($koneksi, $id_certificate)
 function updatecertificate($koneksi, $data, $id_certificate)
 {
     $query = "UPDATE tb_certificate SET 
-              title=?, pihak=?, detail=?, jobdesk=?, Gambar_hasilcertificate=?, tanggal_mulai=?, tanggal_selesai=? 
+              title=?, pihak=?, detail=?,  Gambar_hasilcertificate=?, tanggal_mulai=?, tanggal_selesai=? 
               WHERE id_certificate=?";
-              
+
     // Prepare the statement
     $stmt = $koneksi->prepare($query);
 
@@ -25,11 +25,10 @@ function updatecertificate($koneksi, $data, $id_certificate)
 
     // Bind parameters, where the last 'i' represents an integer, and the second-to-last '?' can be NULL
     $stmt->bind_param(
-        "sssssssi",
+        "ssssssi",
         $data['title'],
         $data['pihak'],
         $data['detail'],
-        $data['jobdesk'],
         $data['Gambar_hasilcertificate'],
         $data['tanggal_mulai'],
         $tanggal_selesai, // This can be NULL if not provided
@@ -57,7 +56,7 @@ function handleFileUpload($files)
         if (move_uploaded_file($file_tmp, $target_dir . $file_name)) {
             $uploaded_files[] = $file_name;
         } else {
-            echo "<div class='alert alert-danger'>Gagal meng-upload file {$name}.</div>";
+            echo "<script>Swal.fire('Error', 'Gagal meng-upload file {$name}.', 'error');</script>";
         }
     }
 
@@ -70,11 +69,11 @@ if (isset($_GET['id'])) {
     $certificate = getcertificateById($koneksi, $id_certificate);
 
     if (!$certificate) {
-        echo "<div class='alert alert-danger'>Data tidak ditemukan</div>";
+        echo "<script>Swal.fire('Error', 'Data tidak ditemukan.', 'error');</script>";
         exit();
     }
 } else {
-    echo "<div class='alert alert-danger'>ID tidak valid</div>";
+    echo "<script>Swal.fire('Error', 'ID tidak valid.', 'error');</script>";
     exit();
 }
 
@@ -85,7 +84,6 @@ if (isset($_POST['update'])) {
         'title' => $_POST['title'],
         'pihak' => $_POST['pihak'],
         'detail' => $_POST['detail'],
-        'jobdesk' => $_POST['jobdesk'],
         'tanggal_mulai' => $_POST['tanggal_mulai'],
         'tanggal_selesai' => $_POST['tanggal_selesai'], // Can be NULL
         'Gambar_hasilcertificate' => !empty($_FILES['Gambar_hasilcertificate']['name'][0])
@@ -95,81 +93,81 @@ if (isset($_POST['update'])) {
 
     // Update certificate data
     if (updatecertificate($koneksi, $data, $id_certificate)) {
-        echo "<div class='alert alert-info'>Data Berhasil Diperbarui</div>";
-        echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=certificate'>";
+        echo "<script>
+                Swal.fire({
+                    title: 'Sukses!',
+                    text: 'Data berhasil diperbarui.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(function() {
+                    window.location.href = 'admin/admin.php?halaman=certificate';
+                });
+              </script>";
     } else {
-        echo "<div class='alert alert-danger'>Terjadi kesalahan: " . $koneksi->error . "</div>";
+        echo "<script>Swal.fire('Error', 'Terjadi kesalahan: " . $koneksi->error . "', 'error');</script>";
     }
 }
 ?>
 
-
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Edit certificate</h5>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Update Data Sertifikat</h4>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
-            <!-- Title -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="title">Title</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($certificate['title']) ?>" required>
-                </div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="title">Nama Sertifikat</label>
+                                <input id="title" name="title" type="text" class="form-control" placeholder="Nama Sertifikat" value="<?= htmlspecialchars($certificate['title']) ?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pihak">Pihak Pemberi</label>
+                                <input id="pihak" name="pihak" type="text" class="form-control" placeholder="Pihak" value="<?= htmlspecialchars($certificate['pihak']) ?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="detail">Keterangan</label>
+                                <textarea class="form-control" id="detail" rows="5" placeholder="Keterangan" name="detail" required><?= htmlspecialchars($certificate['detail']) ?></textarea>
+                                <p style="color: red;">untuk membuat new line gunakan enter</p>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="tanggal_mulai">Tanggal Mulai</label>
+                                <input type="date" id="tanggal_mulai" class="form-control" placeholder="Tanggal Mulai" name="tanggal_mulai" value="<?= htmlspecialchars($certificate['tanggal_mulai']) ?>" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_selesai">Tanggal Selesai</label>
+                                <input type="date" id="tanggal_selesai" class="form-control" placeholder="Tanggal Selesai" name="tanggal_selesai" value="<?= htmlspecialchars($certificate['tanggal_selesai']) ?>" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="Gambar_hasilcertificate">Foto</label>
+                                <input type="file" class="form-control" id="Gambar_hasilcertificate" name="Gambar_hasilcertificate[]" accept="image/png, image/gif, image/jpeg" multiple>
+                                <!-- Display existing images -->
+                                <?php foreach (explode(',', $certificate['Gambar_hasilcertificate']) as $img): ?>
+                                    <img src="admin/storage/Gambar_hasilcertificate/<?= htmlspecialchars($img) ?>" alt="Gambar certificate" width="120">
+                                <?php endforeach; ?>
+                                <p style="color: red;"> note: Gambar Bisa Lebih dari 1</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary waves-effect waves-light" name="update">Update</button>
+                    </div>
+                </form>
+
             </div>
-            <!-- pihak -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="pihak">pihak</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="pihak" name="pihak" value="<?= htmlspecialchars($certificate['pihak']) ?>" required>
-                </div>
-            </div>
-            <!-- Detail -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="detail">Detail</label>
-                <div class="col-sm-10">
-                    <textarea id="detail" class="form-control" name="detail" required><?= htmlspecialchars($certificate['detail']) ?></textarea>
-                </div>
-            </div>
-            <!-- Technology -->
-            <!-- Jobdesk -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="jobdesk">Jobdesk</label>
-                <div class="col-sm-10">
-                    <textarea id="jobdesk" class="form-control" name="jobdesk" required><?= htmlspecialchars($certificate['jobdesk']) ?></textarea>
-                </div>
-            </div>
-            <!-- Gambar Hasil certificate -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="Gambar_hasilcertificate">Foto</label>
-                <div class="col-sm-10">
-                    <input type="file" class="form-control" id="Gambar_hasilcertificate" name="Gambar_hasilcertificate[]" multiple>
-                    <!-- Display existing images -->
-                    <?php foreach (explode(',', $certificate['Gambar_hasilcertificate']) as $img): ?>
-                        <img src="storage/Gambar_hasilcertificate/<?= htmlspecialchars($img) ?>" alt="Gambar certificate" width="100">
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <!-- Tanggal Mulai -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="tanggal_mulai">Tanggal Mulai</label>
-                <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" value="<?= htmlspecialchars($certificate['tanggal_mulai']) ?>" required>
-                </div>
-            </div>
-            <!-- Tanggal Selesai -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="tanggal_selesai">Tanggal Selesai</label>
-                <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="<?= htmlspecialchars($certificate['tanggal_selesai']) ?>">
-                </div>
-            </div>
-            <!-- Save Button -->
-            <div class="row justify-content-end">
-                <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary" name="update">Update</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </div>

@@ -15,11 +15,11 @@ function updateProject($koneksi, $data, $id_project)
 {
     $stmt = $koneksi->prepare("UPDATE tb_project SET 
               title=?, posisi=?, detail=?, technology=?, jobdesk=?, 
-              Gambar_hasilproject=?, tanggal_mulai=?, tanggal_selesai=?, class=? 
+              Gambar_hasilproject=?, tanggal_mulai=?, tanggal_selesai=?
               WHERE id_project=?");
 
     $stmt->bind_param(
-        "ssssssssii",
+        "ssssssssi",
         $data['title'],
         $data['posisi'],
         $data['detail'],
@@ -28,14 +28,13 @@ function updateProject($koneksi, $data, $id_project)
         $data['Gambar_hasilproject'],
         $data['tanggal_mulai'],
         $data['tanggal_selesai'],
-        $data['class'],
-        $id_project // Make sure to add this last
+        $id_project // Ensure this is added last
     );
 
     return $stmt->execute();
 }
 
-// Function to handle file uploads
+// Function to handle file uploads with compression
 function handleFileUpload($files)
 {
     $uploaded_files = [];
@@ -46,17 +45,39 @@ function handleFileUpload($files)
     }
 
     foreach ($files['name'] as $key => $name) {
-        $file_name = date("YmdHis") . '-' . basename($name);
         $file_tmp = $files['tmp_name'][$key];
+        $file_name = date("YmdHis") . '-' . basename($name);
+        $target_file = $target_dir . $file_name;
 
-        if (move_uploaded_file($file_tmp, $target_dir . $file_name)) {
+        // Compress and move uploaded file
+        if (compressImage($file_tmp, $target_file)) {
             $uploaded_files[] = $file_name;
         } else {
-            echo "<div class='alert alert-danger'>Gagal meng-upload file {$name}.</div>";
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal meng-upload file',
+                    text: 'Gagal meng-upload file $name.'
+                });
+            </script>";
         }
     }
 
     return implode(",", $uploaded_files);
+}
+
+// Function to compress images
+function compressImage($source, $destination, $quality = 75)
+{
+    $image_info = getimagesize($source);
+    if ($image_info['mime'] == 'image/jpeg') {
+        $image = imagecreatefromjpeg($source);
+        return imagejpeg($image, $destination, $quality);
+    } elseif ($image_info['mime'] == 'image/png') {
+        $image = imagecreatefrompng($source);
+        return imagepng($image, $destination, (9 - round($quality / 10)));
+    }
+    return false; // Unsupported image type
 }
 
 // Check if ID is provided via the URL parameter
@@ -65,11 +86,23 @@ if (isset($_GET['id'])) {
     $project = getProjectById($koneksi, $id_project);
 
     if (!$project) {
-        echo "<div class='alert alert-danger'>Data tidak ditemukan</div>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Data tidak ditemukan',
+                text: 'Data project tidak ditemukan.'
+            });
+        </script>";
         exit();
     }
 } else {
-    echo "<div class='alert alert-danger'>ID tidak valid</div>";
+    echo "<script>
+        Swal.fire({
+            icon: 'error',
+            title: 'ID tidak valid',
+            text: 'Silakan periksa ID yang diberikan.'
+        });
+    </script>";
     exit();
 }
 
@@ -84,7 +117,6 @@ if (isset($_POST['update'])) {
         'jobdesk' => $_POST['jobdesk'],
         'tanggal_mulai' => $_POST['tanggal_mulai'],
         'tanggal_selesai' => $_POST['tanggal_selesai'],
-        'class' => $_POST['class'],
         'Gambar_hasilproject' => !empty($_FILES['Gambar_hasilproject']['name'][0])
             ? handleFileUpload($_FILES['Gambar_hasilproject'])
             : $project['Gambar_hasilproject'],
@@ -92,96 +124,98 @@ if (isset($_POST['update'])) {
 
     // Update project data
     if (updateProject($koneksi, $data, $id_project)) {
-        echo "<div class='alert alert-info'>Data Berhasil Diperbarui</div>";
-        echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=project'>";
+        // Success message with SweetAlert
+        echo "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Data Berhasil Diperbarui',
+                text: 'Data project telah berhasil diperbarui!',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = 'admin/admin.php?halaman=project';
+            });
+        </script>";
     } else {
-        echo "<div class='alert alert-danger'>Terjadi kesalahan: " . $koneksi->error . "</div>";
+        // Error message with SweetAlert
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Terjadi kesalahan',
+                text: '" . htmlspecialchars($koneksi->error) . "'
+            });
+        </script>";
     }
 }
 ?>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Edit Project</h5>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Perbarui Data Proyek</h4>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
-            <!-- Title -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="title">Title</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($project['title']) ?>" required>
-                </div>
+</div>
+<!-- end page title -->
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="title">Nama</label>
+                                <input id="title" name="title" type="text" class="form-control" placeholder="Nama Proyek" value="<?= htmlspecialchars($project['title']) ?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="posisi">Posisi</label>
+                                <input id="posisi" name="posisi" type="text" class="form-control" placeholder="posisi" value="<?= htmlspecialchars($project['posisi']) ?>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="detail">Keterangan</label>
+                                <textarea class="form-control" id="detail" rows="5" placeholder="Keterangan" name="detail" required><?= htmlspecialchars($project['detail']) ?></textarea>
+                                <p style="color: red;">untuk membuat new line gunakan enter</p>
+
+                            </div>
+                            <div class="mb-3">
+                                <label for="technology">Teknologi</label>
+                                <input id="technology" name="technology" type="text" class="form-control" placeholder="Teknologi" value="<?= htmlspecialchars($project['technology']) ?>" required>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="jobdesk">Jobdesk</label>
+                                <textarea class="form-control" id="jobdesk" rows="5" placeholder="Pekerjaan" name="jobdesk" required><?= htmlspecialchars($project['jobdesk']) ?></textarea>
+                                <p style="color: red;">untuk membuat new line gunakan enter</p>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_mulai">Tanggal Mulai</label>
+                                <input type="date" id="tanggal_mulai" class="form-control" placeholder="Tanggal Mulai" name="tanggal_mulai" value="<?= htmlspecialchars($project['tanggal_mulai']) ?>" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_selesai">Tanggal Selesai</label>
+                                <input type="date" id="tanggal_selesai" class="form-control" placeholder="Tanggal Selesai" name="tanggal_selesai" value="<?= htmlspecialchars($project['tanggal_selesai']) ?>" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="Gambar_hasilproject">Foto</label>
+                                <input type="file" class="form-control" id="Gambar_hasilproject" name="Gambar_hasilproject[]" accept="image/png, image/gif, image/jpeg" multiple>
+                                <?php foreach (explode(',', $project['Gambar_hasilproject']) as $img): ?>
+                                    <img src="admin/storage/Gambar_hasilproject/<?= htmlspecialchars($img) ?>" alt="Gambar Project" width="100">
+                                <?php endforeach; ?>
+                                <p style="color: red;"> note: Gambar Bisa Lebih dari 1</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary waves-effect waves-light" name="update">Perbarui</button>
+                    </div>
+                </form>
+
             </div>
-            <!-- Posisi -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="posisi">Posisi</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="posisi" name="posisi" value="<?= htmlspecialchars($project['posisi']) ?>" required>
-                </div>
-            </div>
-            <!-- Detail -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="detail">Detail</label>
-                <div class="col-sm-10">
-                    <textarea id="detail" class="form-control" name="detail" required><?= htmlspecialchars($project['detail']) ?></textarea>
-                </div>
-            </div>
-            <!-- Technology -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="technology">Technology</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="technology" name="technology" value="<?= htmlspecialchars($project['technology']) ?>" required>
-                </div>
-            </div>
-            <!-- Jobdesk -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="jobdesk">Jobdesk</label>
-                <div class="col-sm-10">
-                    <textarea id="jobdesk" class="form-control" name="jobdesk" required><?= htmlspecialchars($project['jobdesk']) ?></textarea>
-                </div>
-            </div>
-            <!-- Gambar Hasil Project -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="Gambar_hasilproject">Foto</label>
-                <div class="col-sm-10">
-                    <input type="file" class="form-control" id="Gambar_hasilproject" name="Gambar_hasilproject[]" multiple>
-                    <!-- Display existing images -->
-                    <?php foreach (explode(',', $project['Gambar_hasilproject']) as $img): ?>
-                        <img src="storage/Gambar_hasilproject/<?= htmlspecialchars($img) ?>" alt="Gambar Project" width="100">
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <!-- Tanggal Mulai -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="tanggal_mulai">Tanggal Mulai</label>
-                <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" value="<?= htmlspecialchars($project['tanggal_mulai']) ?>" required>
-                </div>
-            </div>
-            <!-- Tanggal Selesai -->
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="tanggal_selesai">Tanggal Selesai</label>
-                <div class="col-sm-6">
-                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="<?= htmlspecialchars($project['tanggal_selesai']) ?>" required>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="class">Class</label>
-                <div class="col-sm-10">
-                    <select class="form-control" id="class" name="class" required>
-                        <option value="<?= htmlspecialchars($project["class"]) ?>"><?= htmlspecialchars($project["class"]) ?></option>
-                        <option value="bg-prink">Pink</option>
-                        <option value="bg-catkrill">Grey</option>
-                    </select>
-                </div>
-            </div>
-            <!-- Save Button -->
-            <div class="row justify-content-end">
-                <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary" name="update">Update</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </div>

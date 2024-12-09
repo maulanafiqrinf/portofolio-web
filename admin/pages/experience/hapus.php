@@ -1,8 +1,9 @@
 <?php
-include '../koneksi/koneksi.php'; // Ensure the connection path is correct
+include '../koneksi/koneksi.php'; // Pastikan jalur koneksi benar
 
-function deleteexperience($koneksi, $id_experience) {
-    // Query to get experience data
+// Function untuk menghapus pengalaman berdasarkan ID
+function deleteExperience($koneksi, $id_experience) {
+    // Query untuk mendapatkan data pengalaman
     $stmt = $koneksi->prepare("SELECT * FROM tb_experience WHERE id_experience = ?");
     $stmt->bind_param("i", $id_experience);
     $stmt->execute();
@@ -10,42 +11,59 @@ function deleteexperience($koneksi, $id_experience) {
 
     if ($result->num_rows > 0) {
         $experience = $result->fetch_assoc();
-        
-        // Delete associated image files
-        deleteAssociatedFiles($experience['Gambar_hasilexperience']);
-
-        // Query to delete the experience
+        // Query untuk menghapus pengalaman
         $delete_stmt = $koneksi->prepare("DELETE FROM tb_experience WHERE id_experience = ?");
         $delete_stmt->bind_param("i", $id_experience);
 
         if ($delete_stmt->execute()) {
-            echo "<div class='alert alert-info'>Data Berhasil Dihapus</div>";
-            echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=experience'>";
+            echo "<script>
+                    Swal.fire({
+                        title: 'Sukses!',
+                        text: 'Data berhasil dihapus',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = 'admin/admin.php?halaman=experience';
+                        }
+                    });
+                </script>";
         } else {
-            echo "<div class='alert alert-danger'>Terjadi kesalahan saat menghapus data: " . $delete_stmt->error . "</div>";
+            echo "<script>
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat menghapus data: " . $delete_stmt->error . "',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                </script>";
         }
         $delete_stmt->close();
     } else {
-        echo "<div class='alert alert-danger'>Data tidak ditemukan</div>";
+        echo "<script>
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Data tidak ditemukan',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+              </script>";
     }
     $stmt->close();
 }
 
-function deleteAssociatedFiles($gambar) {
-    $files = explode(",", $gambar);
-    foreach ($files as $file) {
-        $file_path = "storage/Gambar_hasilexperience/" . $file;
-        if (file_exists($file_path)) {
-            unlink($file_path); // Delete the file
-        }
-    }
-}
-
-// Check if ID is provided via the URL parameter
+// Cek apakah ID diberikan melalui parameter URL
 if (isset($_GET['id'])) {
-    $id_experience = intval($_GET['id']); // Ensure ID is an integer
-    deleteexperience($koneksi, $id_experience);
+    $id_experience = intval($_GET['id']); // Pastikan ID adalah integer
+    deleteExperience($koneksi, $id_experience);
 } else {
-    echo "<div class='alert alert-danger'>ID tidak valid</div>";
+    echo "<script>
+            Swal.fire({
+                title: 'Error!',
+                text: 'ID tidak valid',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+          </script>";
 }
 ?>

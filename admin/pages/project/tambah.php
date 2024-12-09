@@ -3,23 +3,25 @@ function handleFormSubmission($koneksi)
 {
     if (isset($_POST['save'])) {
         $data = [
-            'title' => mysqli_real_escape_string($koneksi, $_POST['title']),
-            'posisi' => mysqli_real_escape_string($koneksi, $_POST['posisi']),
-            'detail' => mysqli_real_escape_string($koneksi, $_POST['detail']),
-            'technology' => mysqli_real_escape_string($koneksi, $_POST['technology']),
-            'jobdesk' => mysqli_real_escape_string($koneksi, $_POST['jobdesk']),
-            'tanggal_mulai' => mysqli_real_escape_string($koneksi, $_POST['tanggal_mulai']),
-            'tanggal_selesai' => mysqli_real_escape_string($koneksi, $_POST['tanggal_selesai']),
-            'class' => mysqli_real_escape_string($koneksi, $_POST['class']),
+            'title' => $_POST['title'],
+            'posisi' => $_POST['posisi'],
+            'detail' => $_POST['detail'],
+            'technology' => $_POST['technology'],
+            'jobdesk' => $_POST['jobdesk'],
+            'tanggal_mulai' => $_POST['tanggal_mulai'],
+            'tanggal_selesai' => $_POST['tanggal_selesai'],
         ];
+
+        // Use prepared statements to prevent SQL injection
+        $query = "INSERT INTO tb_project (title, posisi, detail, technology, jobdesk, Gambar_hasilproject, tanggal_mulai, tanggal_selesai) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
         $uploaded_files = handleFileUpload('Gambar_hasilproject', "storage/Gambar_hasilproject/");
         $uploaded_files_string = implode(",", $uploaded_files);
-        $query = "INSERT INTO tb_project (title, posisi, detail, technology, jobdesk, Gambar_hasilproject, tanggal_mulai, tanggal_selesai, class) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         if ($stmt = $koneksi->prepare($query)) {
             $stmt->bind_param(
-                "sssssssss",
+                "ssssssss",
                 $data['title'],
                 $data['posisi'],
                 $data['detail'],
@@ -28,18 +30,41 @@ function handleFormSubmission($koneksi)
                 $uploaded_files_string,
                 $data['tanggal_mulai'],
                 $data['tanggal_selesai'],
-                $data['class']
             );
 
             if ($stmt->execute()) {
-                echo "<div class='alert alert-info'>Data Tersimpan</div>";
-                echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=project'>";
+                // Success message with SweetAlert
+                echo "<script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Data Tersimpan',
+                        text: 'Data project berhasil disimpan!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = 'admin/admin.php?halaman=project';
+                    });
+                </script>";
             } else {
-                echo "<div class='alert alert-danger'>Terjadi kesalahan: " . $stmt->error . "</div>";
+                // Error message with SweetAlert
+                echo "<script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi kesalahan',
+                        text: '" . htmlspecialchars($stmt->error) . "'
+                    });
+                </script>";
             }
             $stmt->close();
         } else {
-            echo "<div class='alert alert-danger'>Terjadi kesalahan dalam mempersiapkan query: " . $koneksi->error . "</div>";
+            // Error preparing query with SweetAlert
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi kesalahan',
+                    text: '" . htmlspecialchars($koneksi->error) . "'
+                });
+            </script>";
         }
     }
 }
@@ -55,14 +80,49 @@ function handleFileUpload($inputName, $targetDir)
         $file_tmp = $_FILES[$inputName]['tmp_name'][$key];
         $new_file_name = date("YmdHis") . '-' . basename($file_name);
 
-        if (move_uploaded_file($file_tmp, $targetDir . $new_file_name)) {
+        // Compress image before uploading
+        if (compressImage($file_tmp, $targetDir . $new_file_name)) {
             $uploaded_files[] = $new_file_name;
         } else {
-            echo "<div class='alert alert-danger'>Gagal meng-upload file $file_name.</div>";
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal meng-upload file',
+                    text: 'Gagal meng-upload file $file_name.'
+                });
+            </script>";
         }
     }
 
     return $uploaded_files;
+}
+
+function compressImage($source, $destination, $quality = 75)
+{
+    $image_info = getimagesize($source);
+    if ($image_info === false) {
+        return false;
+    }
+
+    switch ($image_info['mime']) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($source);
+            imagejpeg($image, $destination, $quality);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($source);
+            imagepng($image, $destination, (int)(9 * ($quality / 120))); // PNG quality is 0-9
+            break;
+        case 'image/gif':
+            $image = imagecreatefromgif($source);
+            imagegif($image, $destination);
+            break;
+        default:
+            return false;
+    }
+
+    imagedestroy($image);
+    return true;
 }
 
 // Include your database connection
@@ -70,82 +130,72 @@ include '../koneksi/koneksi.php';
 handleFormSubmission($koneksi);
 ?>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Tambah Project</h5>
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Tambah Data Proyek</h4>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
-            <?php
-            $fields = [
-                'title' => 'Title',
-                'posisi' => 'Posisi',
-                'detail' => 'Detail',
-                'technology' => 'Technology',
-                'jobdesk' => 'Jobdesk',
-            ];
+</div>
+<!-- end page title -->
 
-            foreach ($fields as $name => $label) {
-                if ($name == 'detail' || $name == 'jobdesk') {
-                    echo "
-                                <div class='row mb-3'>
-                                    <label class='col-sm-2 col-form-label' for='$name'>$label</label>
-                                    <div class='col-sm-10'>
-                                        <textarea id='$name' class='form-control' name='$name' required></textarea>
-                                    </div>
-                                </div>";
-                } else {
-                    echo "
-                                <div class='row mb-3'>
-                                    <label class='col-sm-2 col-form-label' for='$name'>$label</label>
-                                    <div class='col-sm-10'>
-                                        <input type='text' class='form-control' id='$name' name='$name' required>
-                                    </div>
-                                </div>";
-                }
-            }
-            ?>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="title">Nama</label>
+                                <input id="title" name="title" type="text" class="form-control" placeholder="Nama Proyek" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="posisi">Posisi</label>
+                                <input id="posisi" name="posisi" type="text" class="form-control" placeholder="posisi" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="detail">Keterangan</label>
+                                <textarea class="form-control" id="detail" rows="5" placeholder="Keterangan" name="detail" required></textarea>
+                                <p style="color: red;">untuk membuat new line gunakan enter</p>
 
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="Gambar_hasilproject">Foto</label>
-                <div class="col-sm-10">
-                    <input type="file" class="form-control" id="Gambar_hasilproject" name="Gambar_hasilproject[]" multiple required>
-                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="technology">Teknologi</label>
+                                <input id="technology" name="technology" type="text" class="form-control" placeholder="Teknologi" required>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="jobdesk">Jobdesk</label>
+                                <textarea class="form-control" id="jobdesk" rows="5" placeholder="Pekerjaan" name="jobdesk" required></textarea>
+                                <p style="color: red;">untuk membuat new line gunakan enter</p>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_mulai">Tanggal Mulai</label>
+                                <input type="date" id="tanggal_mulai" class="form-control" placeholder="Tanggal Mulai" name="tanggal_mulai" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_selesai">Tanggal Selesai</label>
+                                <input type="date" id="tanggal_selesai" class="form-control" placeholder="Tanggal Selesai" name="tanggal_selesai" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="Gambar_hasilproject">Foto</label>
+                                <input type="file" class="form-control" id="Gambar_hasilproject" name="Gambar_hasilproject[]" accept="image/png, image/gif, image/jpeg" multiple required>
+                                <p style="color: red;"> note: Gambar Bisa Lebih dari 1</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary waves-effect waves-light" name="save">Simpan</button>
+                    </div>
+                </form>
+
             </div>
-
-            <?php
-            $dateFields = [
-                'tanggal_mulai' => 'Tanggal Mulai',
-                'tanggal_selesai' => 'Tanggal Selesai',
-            ];
-
-            foreach ($dateFields as $name => $label) {
-                echo "
-                            <div class='row mb-3'>
-                                <label class='col-sm-2 col-form-label' for='$name'>$label</label>
-                                <div class='col-sm-6'>
-                                    <input type='date' class='form-control' id='$name' name='$name' required>
-                                </div>
-                            </div>";
-            }
-            ?>
-
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="class">Class</label>
-                <div class="col-sm-10">
-                    <select class="form-control" id="class" name="class" required>
-                        <option value="">-- Pilih Class --</option>
-                        <option value="bg-prink">Pink</option>
-                        <option value="bg-catkrill">Grey</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row justify-content-end">
-                <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary" name="save">Simpan</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
