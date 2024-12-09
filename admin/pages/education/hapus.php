@@ -1,8 +1,6 @@
 <?php
-include '../koneksi/koneksi.php'; // Ensure the connection path is correct
-
-function deleteeducation($koneksi, $id_education) {
-    // Query to get education data
+include '../koneksi/koneksi.php';
+function deleteEducation($koneksi, $id_education) {
     $stmt = $koneksi->prepare("SELECT * FROM tb_education WHERE id_education = ?");
     $stmt->bind_param("i", $id_education);
     $stmt->execute();
@@ -10,31 +8,52 @@ function deleteeducation($koneksi, $id_education) {
 
     if ($result->num_rows > 0) {
         $education = $result->fetch_assoc();
-        
-        // Delete associated image files
-        // Query to delete the education
         $delete_stmt = $koneksi->prepare("DELETE FROM tb_education WHERE id_education = ?");
         $delete_stmt->bind_param("i", $id_education);
 
         if ($delete_stmt->execute()) {
-            echo "<div class='alert alert-info'>Data Berhasil Dihapus</div>";
-            echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=education'>";
+            echo "<script>
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Data Berhasil Dihapus',
+                        icon: 'success'
+                    }).then(() => {
+                        location.href='admin/admin.php?halaman=education';
+                    });
+                  </script>";
         } else {
-            echo "<div class='alert alert-danger'>Terjadi kesalahan saat menghapus data: " . $delete_stmt->error . "</div>";
+            echo "<script>
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Terjadi kesalahan saat menghapus data: " . htmlspecialchars($delete_stmt->error) . "',
+                        icon: 'error'
+                    });
+                  </script>";
         }
         $delete_stmt->close();
     } else {
-        echo "<div class='alert alert-danger'>Data tidak ditemukan</div>";
+        echo "<script>
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Data tidak ditemukan',
+                    icon: 'error'
+                });
+              </script>";
     }
     $stmt->close();
 }
-
-
-// Check if ID is provided via the URL parameter
-if (isset($_GET['id'])) {
-    $id_education = intval($_GET['id']); // Ensure ID is an integer
-    deleteeducation($koneksi, $id_education);
+if (isset($_GET['id']) && is_numeric($_GET['id']) && intval($_GET['id']) > 0) {
+    $id_education = intval($_GET['id']);
+    deleteEducation($koneksi, $id_education);
 } else {
-    echo "<div class='alert alert-danger'>ID tidak valid</div>";
+    echo "<script>
+            Swal.fire({
+                title: 'Error',
+                text: 'ID tidak valid',
+                icon: 'error'
+            });
+          </script>";
 }
+
+$koneksi->close();
 ?>

@@ -1,88 +1,103 @@
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Education</h5>
-        <a href="index.php?halaman=tambah-education" class="btn btn-primary">
-            <i class="bx bx-plus-circle"></i> Tambah Data
-        </a>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table id="example" class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>Title</th>
-                        <th>Posisi</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    include '../koneksi/koneksi.php';
-
-                    $no = 1;
-                    $query = "SELECT * FROM tb_education";
-                    if ($result = $koneksi->query($query)) {
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
-                                $id_education = htmlspecialchars($row['id_education']);
-                                $title = htmlspecialchars($row['title']);
-                                $posisi = htmlspecialchars($row['posisi']);
-                    ?>
-                                <tr class="text-center">
-                                    <td><?php echo $no++; ?></td>
-                                    <td><?php echo $title; ?></td>
-                                    <td><?php echo $posisi; ?></td>
-                                    <td>
-                                        <a href="index.php?halaman=update-education&id=<?php echo $id_education; ?>" class="btn btn-warning">
-                                            <i class="bx bx-edit-alt me-1"></i>
-                                        </a>
-                                        <a href="index.php?halaman=hapus-education&id=<?php echo $id_education; ?>" class="btn btn-danger">
-                                            <i class="bx bx-trash-alt me-1"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                    <?php
-                            }
-                        } else {
-                            echo "<tr><td colspan='4' class='text-center'>No data available</td></tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='4' class='text-center'>Error fetching data: " . $koneksi->error . "</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Pendidikan</h4>
         </div>
     </div>
 </div>
+<!-- end page title -->
 
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-sm-12">
+                        <div class="text-sm-end">
+                            <a href="admin/admin.php?halaman=tambah-education" class="btn btn-success btn-rounded" id="addProject-btn">
+                                <i class="mdi mdi-plus me-1"></i> Tambah
+                            </a>
+                        </div>
+                    </div><!-- end col-->
+                </div>
 
+                <div class="table-responsive">
+                    <table class="table align-middle table-nowrap dt-responsive nowrap w-100" id="datatable-buttons">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Nama Univ</th>
+                                <th>Jurusan/Prodi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        include '../koneksi/koneksi.php';
 
-
-
-<!-- Include jQuery and DataTables -->
-<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-<link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+                        $no = 1;
+                        $query = "SELECT * FROM tb_education";
+                        if ($stmt = $koneksi->prepare($query)) {
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $id_education = htmlspecialchars($row['id_education']);
+                                    $title = htmlspecialchars($row['title']);
+                                    $posisi = htmlspecialchars($row['posisi']);
+                        ?>
+                                    <tr class="text-center">
+                                        <td><?php echo $no++; ?></td>
+                                        <td><?php echo $title; ?></td>
+                                        <td><?php echo $posisi; ?></td>
+                                        <td>
+                                            <a href="admin/admin.php?halaman=update-education&id=<?php echo $id_education; ?>" class="btn btn-warning" title="Edit">
+                                                <i class="mdi mdi-pencil me-1"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-danger" title="Delete" onclick="confirmDelete('<?php echo $id_education; ?>'); return false;">
+                                                <i class="mdi mdi-delete me-1"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                        <?php
+                                }
+                            } else {
+                                echo "<tr><td colspan='4' class='text-center'>No data available</td></tr>";
+                            }
+                            $stmt->close();
+                        } else {
+                            echo "<tr><td colspan='4' class='text-center'>Error fetching data: " . htmlspecialchars($koneksi->error) . "</td></tr>";
+                        }
+                        ?>
+                        </tbody>
+                    </table>
+                    <!-- end table -->
+                </div>
+                <!-- end table responsive -->
+            </div>
+            <!-- end card body -->
+        </div>
+        <!-- end card -->
+    </div>
+    <!-- end col -->
+</div>
 
 <script>
-    $(document).ready(function() {
-        $('#example').DataTable({
-            "paging": true,           // Enable pagination
-            "lengthChange": true,      // Allow the user to change the number of rows per page
-            "searching": true,         // Enable search functionality
-            "ordering": true,          // Enable column ordering
-            "info": true,              // Show table information
-            "autoWidth": false,        // Disable auto column width calculation
-            "responsive": true,        // Make table responsive
-            "language": {
-                "paginate": {
-                    "previous": "Previous",
-                    "next": "Next"
-                }
+    function confirmDelete(id) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You won\'t be able to revert this!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to delete page
+                window.location.href = 'admin/admin.php?halaman=hapus-education&id=' + id;
             }
         });
-    });
-</script> -->
+    }
+</script>

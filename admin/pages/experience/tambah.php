@@ -2,67 +2,61 @@
 function handleFormSubmission($koneksi)
 {
     if (isset($_POST['save'])) {
+        // Allow null values for all fields
         $data = [
-            'title' => mysqli_real_escape_string($koneksi, $_POST['title']),
-            'posisi' => mysqli_real_escape_string($koneksi, $_POST['posisi']),
-            'detail' => mysqli_real_escape_string($koneksi, $_POST['detail']),
-            'technology' => mysqli_real_escape_string($koneksi, $_POST['technology']),
-            'jobdesk' => mysqli_real_escape_string($koneksi, $_POST['jobdesk']),
-            'tanggal_mulai' => mysqli_real_escape_string($koneksi, $_POST['tanggal_mulai']),
-            'tanggal_selesai' => mysqli_real_escape_string($koneksi, $_POST['tanggal_selesai']),
-            // 'class' => mysqli_real_escape_string($koneksi, $_POST['class']),
+            'title' => !empty($_POST['title']) ? $_POST['title'] : null,
+            'posisi' => !empty($_POST['posisi']) ? $_POST['posisi'] : null,
+            'jobdesk' => !empty($_POST['jobdesk']) ? $_POST['jobdesk'] : null,
+            'tanggal_mulai' => !empty($_POST['tanggal_mulai']) ? $_POST['tanggal_mulai'] : null,
+            'tanggal_selesai' => !empty($_POST['tanggal_selesai']) ? $_POST['tanggal_selesai'] : null,
         ];
-        $uploaded_files = handleFileUpload('Gambar_hasilexperience', "storage/Gambar_hasilexperience/");
-        $uploaded_files_string = implode(",", $uploaded_files);
-        $query = "INSERT INTO tb_experience (title, posisi, detail, technology, jobdesk, Gambar_hasilexperience, tanggal_mulai, tanggal_selesai) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        // Prepared statement for inserting data
+        $query = "INSERT INTO tb_experience (title, posisi, jobdesk, tanggal_mulai, tanggal_selesai) 
+                  VALUES (?, ?, ?, ?, ?)";
 
         if ($stmt = $koneksi->prepare($query)) {
             $stmt->bind_param(
-                "ssssssss",
+                "sssss",
                 $data['title'],
                 $data['posisi'],
-                $data['detail'],
-                $data['technology'],
                 $data['jobdesk'],
-                $uploaded_files_string,
                 $data['tanggal_mulai'],
                 $data['tanggal_selesai']
-                // $data['class']
             );
 
             if ($stmt->execute()) {
-                echo "<div class='alert alert-info'>Data Tersimpan</div>";
-                echo "<meta http-equiv='refresh' content='1;url=index.php?halaman=experience'>";
+                echo "<script>
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Data Tersimpan',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        setTimeout(function() {
+                            window.location.href = 'admin/admin.php?halaman=experience';
+                        }, 1500);
+                      </script>";
             } else {
-                echo "<div class='alert alert-danger'>Terjadi kesalahan: " . $stmt->error . "</div>";
+                echo "<script>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan',
+                            text: '" . $stmt->error . "'
+                        });
+                      </script>";
             }
             $stmt->close();
         } else {
-            echo "<div class='alert alert-danger'>Terjadi kesalahan dalam mempersiapkan query: " . $koneksi->error . "</div>";
+            echo "<script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi kesalahan',
+                        text: '" . $koneksi->error . "'
+                    });
+                  </script>";
         }
     }
-}
-
-function handleFileUpload($inputName, $targetDir)
-{
-    $uploaded_files = [];
-    if (!is_dir($targetDir)) {
-        mkdir($targetDir, 0755, true);
-    }
-
-    foreach ($_FILES[$inputName]['name'] as $key => $file_name) {
-        $file_tmp = $_FILES[$inputName]['tmp_name'][$key];
-        $new_file_name = date("YmdHis") . '-' . basename($file_name);
-
-        if (move_uploaded_file($file_tmp, $targetDir . $new_file_name)) {
-            $uploaded_files[] = $new_file_name;
-        } else {
-            echo "<div class='alert alert-danger'>Gagal meng-upload file $file_name.</div>";
-        }
-    }
-
-    return $uploaded_files;
 }
 
 // Include your database connection
@@ -70,82 +64,54 @@ include '../koneksi/koneksi.php';
 handleFormSubmission($koneksi);
 ?>
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Tambah experience</h5>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Tambah Data Pengalaman</h4>
+        </div>
     </div>
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
-            <?php
-            $fields = [
-                'title' => 'Title',
-                'posisi' => 'Posisi',
-                'detail' => 'Detail',
-                'technology' => 'Technology',
-                'jobdesk' => 'Jobdesk',
-            ];
+</div>
+<!-- end page title -->
 
-            foreach ($fields as $name => $label) {
-                if ($name == 'detail' || $name == 'jobdesk') {
-                    echo "
-                                <div class='row mb-3'>
-                                    <label class='col-sm-2 col-form-label' for='$name'>$label</label>
-                                    <div class='col-sm-10'>
-                                        <textarea id='$name' class='form-control' name='$name' required></textarea>
-                                    </div>
-                                </div>";
-                } else {
-                    echo "
-                                <div class='row mb-3'>
-                                    <label class='col-sm-2 col-form-label' for='$name'>$label</label>
-                                    <div class='col-sm-10'>
-                                        <input type='text' class='form-control' id='$name' name='$name' required>
-                                    </div>
-                                </div>";
-                }
-            }
-            ?>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="title">Nama</label>
+                                <input id="title" name="title" type="text" class="form-control" placeholder="Nama Sertifikat" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="posisi">Posisi</label>
+                                <input id="posisi" name="posisi" type="text" class="form-control" placeholder="Posisi" required>
+                            </div>
+                        </div>
 
-            <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="Gambar_hasilexperience">Foto</label>
-                <div class="col-sm-10">
-                    <input type="file" class="form-control" id="Gambar_hasilexperience" name="Gambar_hasilexperience[]" multiple required>
-                </div>
+                        <div class="col-sm-6">
+                            <div class="mb-3">
+                                <label for="jobdesk">Keterangan</label>
+                                <textarea class="form-control" id="jobdesk" rows="5" placeholder="Pekerjaan" name="jobdesk" required></textarea>
+                                <p style="color: red;">Gunakan Enter untuk membuat baris baru</p>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_mulai">Tanggal Mulai</label>
+                                <input type="date" id="tanggal_mulai" class="form-control" placeholder="Tanggal Mulai" name="tanggal_mulai" required />
+                            </div>
+                            <div class="mb-3">
+                                <label for="tanggal_selesai">Tanggal Selesai</label>
+                                <input type="date" id="tanggal_selesai" class="form-control" placeholder="Tanggal Selesai" name="tanggal_selesai" required />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary waves-effect waves-light" name="save">Simpan</button>
+                    </div>
+                </form>
             </div>
-
-            <?php
-            $dateFields = [
-                'tanggal_mulai' => 'Tanggal Mulai',
-                'tanggal_selesai' => 'Tanggal Selesai',
-            ];
-
-            foreach ($dateFields as $name => $label) {
-                echo "
-                            <div class='row mb-3'>
-                                <label class='col-sm-2 col-form-label' for='$name'>$label</label>
-                                <div class='col-sm-6'>
-                                    <input type='date' class='form-control' id='$name' name='$name' required>
-                                </div>
-                            </div>";
-            }
-            ?>
-
-            <!-- <div class="row mb-3">
-                <label class="col-sm-2 col-form-label" for="class">Class</label>
-                <div class="col-sm-10">
-                    <select class="form-control" id="class" name="class" required>
-                        <option value="">-- Pilih Class --</option>
-                        <option value="bg-prink">Pink</option>
-                        <option value="bg-catkrill">Grey</option>
-                    </select>
-                </div>
-            </div> -->
-
-            <div class="row justify-content-end">
-                <div class="col-sm-10">
-                    <button type="submit" class="btn btn-primary" name="save">Simpan</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </div>

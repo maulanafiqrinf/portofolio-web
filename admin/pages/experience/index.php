@@ -1,58 +1,98 @@
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Pengalaman</h5>
-        <a href="index.php?halaman=tambah-experience" class="btn btn-primary">
-            <i class="bx bx-plus-circle"></i> Tambah Data
-        </a>
-    </div>
-    <div class="card-body">
-    <div class="table-responsive">
-        <table id="example" class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
-            <thead>
-                <tr>
-                    <th data-ordering="false">No.</th>
-                    <th data-ordering="false">Title</th>
-                    <th>Posisi</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                include '../koneksi/koneksi.php';
-
-                $no = 1;
-                $query = "SELECT * FROM tb_experience";
-                if ($result = $koneksi->query($query)) {
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            $id_experience = htmlspecialchars($row['id_experience']);
-                            $title = htmlspecialchars($row['title']);
-                            $posisi = htmlspecialchars($row['posisi']);
-                ?>
-                            <tr class="text-center">
-                                <td><?php echo $no++; ?></td>
-                                <td><?php echo $title; ?></td>
-                                <td><?php echo $posisi; ?></td>
-                                <td>
-                                    <a href="index.php?halaman=update-experience&id=<?php echo $id_experience; ?>" class="btn btn-warning">
-                                        <i class="bx bx-edit-alt me-1"></i>
-                                    </a>
-                                    <a href="index.php?halaman=hapus-experience&id=<?php echo $id_experience; ?>" class="btn btn-danger">
-                                        <i class="bx bx-trash-alt me-1"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                <?php
-                        }
-                    } else {
-                        echo "<tr><td colspan='4' class='text-center'>No data available</td></tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='4' class='text-center'>Error fetching data: " . $koneksi->error . "</td></tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0 font-size-18">Pengalaman</h4>
+        </div>
     </div>
 </div>
+<!-- end page title -->
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-sm-12">
+                        <div class="text-sm-end">
+                            <a href="admin/admin.php?halaman=tambah-experience" class="btn btn-success btn-rounded" id="addProject-btn">
+                                <i class="mdi mdi-plus me-1"></i> Tambah
+                            </a>
+                        </div>
+                    </div><!-- end col-->
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle table-nowrap dt-responsive nowrap w-100" id="datatable-buttons">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Nama</th>
+                                <th>Posisi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    <?php
+                    include '../koneksi/koneksi.php';
+
+                    $no = 1;
+                    $query = "SELECT * FROM tb_experience";
+                    if ($result = $koneksi->query($query)) {
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                $id_experience = htmlspecialchars($row['id_experience']);
+                                $title = htmlspecialchars($row['title']);
+                                $posisi = htmlspecialchars($row['posisi']);
+                    ?>
+                                <tr class="text-center">
+                                    <td><?php echo $no++; ?></td>
+                                    <td><?php echo $title; ?></td>
+                                    <td><?php echo $posisi; ?></td>
+                                    <td>
+                                        <a href="admin/admin.php?halaman=update-experience&id=<?php echo $id_experience; ?>" class="btn btn-warning" title="Edit">
+                                            <i class="mdi mdi-pencil me-1"></i>
+                                        </a>
+                                        <button class="btn btn-danger" title="Delete" onclick="confirmDelete(<?php echo $id_experience; ?>)">
+                                            <i class="mdi mdi-delete me-1"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                    <?php
+                            }
+                        } else {
+                            echo "<tr><td colspan='4' class='text-center'>No data available</td></tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='4' class='text-center'>Error fetching data: " . htmlspecialchars($koneksi->error) . "</td></tr>";
+                    }
+                    ?>
+                </tbody>
+                    </table>
+                    <!-- end table -->
+                </div>
+                <!-- end table responsive -->
+            </div>
+            <!-- end card body -->
+        </div>
+        <!-- end card -->
+    </div>
+    <!-- end col -->
+</div>
+
+<script>
+    function confirmDelete(id) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You won\'t be able to revert this!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = 'admin/admin.php?halaman=hapus-experience&id=' + id;
+            }
+        });
+    }
+</script>
